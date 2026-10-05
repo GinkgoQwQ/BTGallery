@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  应用图标 · 前景层：白色蓝牙符文。
+
+  几何说明（Bluetooth 符文 = 一条竖线 + 两个右向三角）：
+    T  = (45,28)  顶部
+    B  = (45,80)  底部
+    RU = (63,41)  右上顶点（"〉" 的上半）
+    C  = (45,54)  中线交点
+    RL = (63,67)  右下顶点（"〉" 的下半）
+  路径：T -> B 画竖线；T -> RU -> C -> RL -> B 画折线。
+  整体横向中心 54、纵向中心 54，正好落在画布正中。
+
+  安全区：自适应图标只有中间约 66x66dp 一定可见，
+  本例图形最大外接半径约 31dp < 33dp，因此圆形/方形裁切都不会切到。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M45,28 L45,80 M45,28 L63,41 L45,54 L63,67 L45,80"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="7.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 深色模式下使用深色系统窗口背景，避免启动/旋转时闪白 -->
+    <style name="Theme.BluetoothConnect" parent="android:Theme.Material.NoActionBar" />
+</resources>

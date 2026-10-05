@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  应用图标 · 背景层（自适应图标 108x108dp 画布）
+
+  用蓝色系渐变表达「蓝牙/无线传输」，左上角加一层柔光提升立体感。
+  注意：自适应图标的背景层会被系统用任意形状（圆形/方形/水滴…）裁切，
+  所以这里直接铺满整个 108x108 画布，越界部分是正常的。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 主底色：斜向三色渐变（亮蓝 -> 品牌蓝 -> 深蓝） -->
+    <path android:pathData="M0,0h108v108H0z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="16"
+                android:startY="0"
+                android:endX="92"
+                android:endY="108">
+                <item android:offset="0.0" android:color="#FF1E9BE6" />
+                <item android:offset="0.45" android:color="#FF0A6BB4" />
+                <item android:offset="1.0" android:color="#FF00405F" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 左上柔光：径向白色渐变，制造光源感 -->
+    <path android:pathData="M0,0h108v108H0z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="34"
+                android:centerY="26"
+                android:gradientRadius="72">
+                <item android:offset="0.0" android:color="#38FFFFFF" />
+                <item android:offset="1.0" android:color="#00FFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>
