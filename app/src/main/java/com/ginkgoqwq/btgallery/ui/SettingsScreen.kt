@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ginkgoqwq.btgallery.BuildConfig
 import com.ginkgoqwq.btgallery.data.AppPreferences
 import com.ginkgoqwq.btgallery.ui.components.AppSwitchRow
 import com.ginkgoqwq.btgallery.ui.components.AppText
@@ -41,8 +42,9 @@ fun SettingsScreen(prefs: AppPreferences) {
         SectionCard("关于") {
             AppText(text = "BTGallery", style = AppTextStyle.Subtitle)
             Spacer(Modifier.height(4.dp))
+            // 直接读 Gradle 配置里的版本，不需要手写（也不会忘了同步）
             AppText(
-                text = "版本 1.0.0",
+                text = "版本 ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                 style = AppTextStyle.Caption,
                 color = appOnSurfaceVariant()
             )
