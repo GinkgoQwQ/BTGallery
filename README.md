@@ -47,49 +47,6 @@
 - **全屏轮播**：隐藏系统栏、保持屏幕常亮、支持横竖屏自适应
 - 播放**完全不依赖发送端**，只用本地已保存的图片
 
-### 界面
-
-- **悬浮底栏**（Apple Dock 风格）：药丸形、浮于内容之上、选中项高亮胶囊，无模糊/玻璃效果
-- 四个页面：**主页 / 发送端 / 接收端 / 设置**
-  - 主页：顶部**蓝牙状态大卡片**（参考 KernelSU `StatusCard`：大圆角卡 + 右下角溢出的大号半透明图标 + 大标题/副标题 + 状态标签）、
-    收发两端实时状态、累计已发送 / 已接收文件数、本地图片库数量
-- **底栏形态可切换**（默认关闭 = 贴底导航栏，开启 = 悬浮胶囊底栏）
-  - 参考 KernelSU / HyperMusicCover 的实现：`Scaffold(bottomBar = { Box { Bar(align(BottomCenter)) } })`
-  - 悬浮形态**移植自 KernelSU** 的 `FloatingBottomBar`：指示器可**按住横向拖拽**、松手吸附；
-    指示器内叠了一份强调色内容副本并裁剪，因此图标/文字颜色随胶囊平滑过渡；无模糊 / 玻璃效果
-  - 滑块**可按住横向拖拽**，松手吸附到最近一项；拖动时该项放大、图标/文字颜色随胶囊平滑过渡
-  - 配色直接取 `MiuixTheme.colorScheme`（与 KernelSU 相同）
-  - 主页大卡片同样参考 KernelSU 布局（**仅参考布局，未复制代码**）
-    > 底栏实现移植自 [KernelSU](https://github.com/tiann/KernelSU)（GPL-3.0），
-  > 相关文件：`ui/components/nav/DampedDragAnimation.kt`、`ui/components/nav/FloatingBottomBar.kt`
-  - 指示器位置由 DampedDragAnimation 的连续值驱动，**拖动时跟手**，不是点击才跳一下
-  - 项宽由总宽除以项数得出，所以项数变化也不会溢出
-  - 底部间距与 KernelSU 同算法：`if (导航栏 inset != 0) 8dp + inset else 28dp`，
-    因此有导航栏时刚好悬在导航栏上方，手势导航时也不会贴底
-  - 贴底形态：使用 Miuix `NavigationBar`
-- 页面切换：**`HorizontalPager` + 弹簧动画**（整页满宽平移，无淡入淡出、无左右白框）
-  - 弹簧参数与参考应用一致：`stiffness = 322.2`、`dampingRatio = 32.31 / (2·√322.2)`、`visibilityThreshold = 0.5`
-  - 水平内边距放在**页面内部**而非 pager 上，所以滑动时不会露出固定白框
-  - **预组合全部页面**（`beyondViewportPageCount = 页面数`），否则首次切页要在动画中途
-    现场组合目标页（内含蓝牙初始化、注册广播等），会直接掉帧
-  - 页面内的文件 I/O（图片目录扫描）放到 `Dispatchers.IO`，不阻塞主线程
-  - 带 `selectedIndex` / `isNavigating` / `navJob` 守卫，避免动画与手势互相打架
-  - 支持手势左右滑动，滑完自动同步选中项；返回键回到第一页
-- **记忆上次页面**：退出时所在的页会被记录，下次启动直接回到那一页
-- 设置页有两个开关，均持久化保存（SharedPreferences）：
-  - **「动态取色」**（默认开启）：跟随系统壁纸取色（Android 12+ / Monet）
-    - 由 `MiuixTheme(controller = ThemeController(ColorSchemeMode.MonetSystem))` 实现
-    - 低于 Android 12 时自动回退到 Miuix 内置配色
-  - **「悬浮底栏」**（默认关闭）：贴底导航栏 ↔ 悬浮胶囊底栏
-- 深色模式跟随系统，**系统栏图标明暗跟随 App 实际主题**
-  - targetSdk 35+ 下 edge-to-edge 强制生效（系统栏透明），图标颜色不会自动跟随，
-    因此在 `AppTheme` 里显式设置 `isAppearanceLightStatusBars` / `isAppearanceLightNavigationBars`，
-    避免「浅色 App + 白色图标」互相看不见
-- 界面代码只写一套：通过组件包装层（`App*` 组件）由 `LocalUiStyle` 决定渲染哪套控件
-- 切换风格时用 `movableContentOf` 保留内容状态，**不会打断正在进行的蓝牙连接 / 监听**
-
----
-
 ## 技术栈
 
 | 类别 | 选型 |
