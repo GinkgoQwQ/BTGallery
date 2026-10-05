@@ -1,6 +1,7 @@
 package com.ginkgoqwq.btgallery.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,11 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,13 +38,7 @@ fun SectionCard(
     trailing: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
+    AppCard(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp)) {
             Row(
                 modifier = Modifier
@@ -62,10 +52,10 @@ fun SectionCard(
                     ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = AppTextStyle.Subtitle,
+                    color = appPrimary(),
                     modifier = Modifier.weight(1f)
                 )
                 if (trailing != null) {
@@ -74,10 +64,10 @@ fun SectionCard(
                 }
                 if (collapsible) {
                     Spacer(Modifier.width(8.dp))
-                    Text(
+                    AppText(
                         text = if (expanded) "收起" else "展开",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        style = AppTextStyle.Caption,
+                        color = appPrimary()
                     )
                 }
             }
@@ -100,16 +90,15 @@ fun SectionCard(
 /** 状态胶囊标签，用于展示「已连接 / 监听中 / 未连接」这类状态。 */
 @Composable
 fun StatusPill(text: String, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    Box(
+        modifier = modifier
+            .background(appPrimaryContainer(), RoundedCornerShape(50))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Text(
+        AppText(
             text = text,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            style = AppTextStyle.Caption,
+            color = appOnPrimaryContainer(),
             maxLines = 1
         )
     }
@@ -124,10 +113,10 @@ fun EmptyHint(text: String, modifier: Modifier = Modifier) {
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        AppText(
             text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = AppTextStyle.Caption,
+            color = appOnSurfaceVariant(),
             textAlign = TextAlign.Center
         )
     }

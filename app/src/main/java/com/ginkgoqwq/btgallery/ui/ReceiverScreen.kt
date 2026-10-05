@@ -26,14 +26,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -63,9 +55,16 @@ import com.ginkgoqwq.btgallery.bluetooth.BluetoothServerManager
 import com.ginkgoqwq.btgallery.data.ImageItem
 import com.ginkgoqwq.btgallery.data.MediaRepository
 import com.ginkgoqwq.btgallery.transfer.ReceiverSession
+import com.ginkgoqwq.btgallery.ui.components.AppButton
+import com.ginkgoqwq.btgallery.ui.components.AppSlider
+import com.ginkgoqwq.btgallery.ui.components.AppTabs
+import com.ginkgoqwq.btgallery.ui.components.AppText
+import com.ginkgoqwq.btgallery.ui.components.AppTextStyle
 import com.ginkgoqwq.btgallery.ui.components.EmptyHint
 import com.ginkgoqwq.btgallery.ui.components.SectionCard
 import com.ginkgoqwq.btgallery.ui.components.StatusPill
+import com.ginkgoqwq.btgallery.ui.components.appOnSurfaceVariant
+import com.ginkgoqwq.btgallery.ui.components.appPrimary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -185,12 +184,11 @@ fun ReceiverScreen() {
             SectionCard("① 接收") {
                 StatusPill(statusText)
                 Spacer(Modifier.height(10.dp))
-                Button(
+                AppButton(
+                    text = if (isListening) "停止监听" else "开始监听",
                     onClick = { if (isListening) stopListening() else startListening() },
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (isListening) "停止监听" else "开始监听")
-                }
+                )
             }
         }
 
@@ -198,46 +196,42 @@ fun ReceiverScreen() {
         item(span = { GridItemSpan(maxLineSpan) }) {
             SectionCard("② 轮播播放") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
+                    AppButton(
+                        text = if (isPlaying) "暂停轮播" else "开始轮播",
                         onClick = { isPlaying = !isPlaying },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(if (isPlaying) "暂停轮播" else "开始轮播")
-                    }
-                    Button(
+                        modifier = Modifier.weight(1f),
+                        primary = false
+                    )
+                    AppButton(
+                        text = "全屏轮播",
                         onClick = { isFullscreen = true },
                         modifier = Modifier.weight(1f),
                         enabled = images.isNotEmpty()
-                    ) {
-                        Text("全屏轮播")
-                    }
+                    )
                 }
 
                 Spacer(Modifier.height(10.dp))
 
                 // 单位选择：秒 / 分 / 时
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    IntervalUnit.entries.forEach { unit ->
-                        FilterChip(
-                            selected = intervalUnit == unit,
-                            onClick = {
-                                intervalUnit = unit
-                                intervalValue = unit.clamp(intervalValue)
-                            },
-                            label = { Text(unit.label) }
-                        )
+                AppTabs(
+                    tabs = IntervalUnit.entries.map { it.label },
+                    selectedIndex = IntervalUnit.entries.indexOf(intervalUnit),
+                    onSelect = {
+                        val unit = IntervalUnit.entries[it]
+                        intervalUnit = unit
+                        intervalValue = unit.clamp(intervalValue)
                     }
-                }
+                )
 
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(10.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "间隔",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    AppText(
+                        text = "间隔",
+                        style = AppTextStyle.Caption,
+                        color = appOnSurfaceVariant()
                     )
-                    Slider(
+                    AppSlider(
                         value = intervalValue.toFloat(),
                         onValueChange = {
                             intervalValue = intervalUnit.clamp(it.roundToInt())
@@ -248,9 +242,9 @@ fun ReceiverScreen() {
                             .weight(1f)
                             .padding(horizontal = 12.dp)
                     )
-                    Text(
-                        "${intervalValue}${intervalUnit.label}",
-                        style = MaterialTheme.typography.bodySmall
+                    AppText(
+                        text = "${intervalValue}${intervalUnit.label}",
+                        style = AppTextStyle.Caption
                     )
                 }
             }
@@ -261,24 +255,26 @@ fun ReceiverScreen() {
             if (images.isNotEmpty()) {
                 val current = images[currentIndex.coerceIn(0, images.lastIndex)]
                 Column {
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Black)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.Black),
+                        contentAlignment = Alignment.Center
                     ) {
                         AsyncImage(
                             model = current.file,
                             contentDescription = current.name,
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(220.dp)
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     Spacer(Modifier.height(6.dp))
-                    Text(
-                        "当前：${current.name}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    AppText(
+                        text = "当前：${current.name}",
+                        style = AppTextStyle.Caption,
+                        color = appOnSurfaceVariant(),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -289,16 +285,16 @@ fun ReceiverScreen() {
         // ---------- ③ 图片库标题 ----------
         item(span = { GridItemSpan(maxLineSpan) }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "③ 图片库",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
+                AppText(
+                    text = "③ 图片库",
+                    style = AppTextStyle.Subtitle,
+                    color = appPrimary()
                 )
                 Spacer(Modifier.width(10.dp))
-                Text(
-                    "共 ${images.size} 张 · 点击删除",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                AppText(
+                    text = "共 ${images.size} 张 · 点击删除",
+                    style = AppTextStyle.Caption,
+                    color = appOnSurfaceVariant()
                 )
             }
         }
@@ -309,12 +305,11 @@ fun ReceiverScreen() {
             }
         } else {
             items(images, key = { it.name }) { item ->
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Black),
+                Box(
                     modifier = Modifier
                         .aspectRatio(1f)
                         .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Black)
                         .clickable {
                             repository.delete(item.file)
                             refreshImages()
@@ -412,8 +407,9 @@ private fun FullscreenCarouselDialog(
                 ) { showControls = !showControls }
         ) {
             if (images.isEmpty()) {
-                Text(
-                    "暂无图片",
+                AppText(
+                    text = "暂无图片",
+                    style = AppTextStyle.Body,
                     color = Color.White,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -427,37 +423,40 @@ private fun FullscreenCarouselDialog(
                 )
 
                 if (showControls) {
-                    Surface(
-                        color = Color(0x99000000),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
+                    Box(
+                        Modifier
                             .align(Alignment.TopCenter)
                             .fillMaxWidth()
                             .padding(16.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0x99000000))
                     ) {
                         Row(
                             Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                "${currentIndex + 1} / ${images.size}",
+                            AppText(
+                                text = "${currentIndex + 1} / ${images.size}",
+                                style = AppTextStyle.Caption,
                                 color = Color.White
                             )
-                            Text(
-                                current.name,
+                            AppText(
+                                text = current.name,
+                                style = AppTextStyle.Caption,
                                 color = Color.White,
-                                style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.weight(1f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            Button(onClick = onPrev) { Text("上一张") }
-                            Button(onClick = onNext) { Text("下一张") }
-                            Button(onClick = onTogglePlay) {
-                                Text(if (isPlaying) "暂停" else "播放")
-                            }
-                            Button(onClick = onExit) { Text("退出") }
+                            AppButton(text = "上一张", onClick = onPrev, primary = false)
+                            AppButton(text = "下一张", onClick = onNext, primary = false)
+                            AppButton(
+                                text = if (isPlaying) "暂停" else "播放",
+                                onClick = onTogglePlay,
+                                primary = false
+                            )
+                            AppButton(text = "退出", onClick = onExit)
                         }
                     }
                 }

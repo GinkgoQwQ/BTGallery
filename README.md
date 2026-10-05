@@ -46,6 +46,14 @@
 - **全屏轮播**：隐藏系统栏、保持屏幕常亮、支持横竖屏自适应
 - 播放**完全不依赖发送端**，只用本地已保存的图片
 
+### 界面
+
+- 内置**两套界面风格**，设置页一键切换，选择会持久化保存：
+  - **默认**：Material 3 配色，蓝白清爽
+  - **Miuix**：HyperOS / MIUI 观感，圆润卡片与胶囊控件
+- 深色模式跟随系统
+- 界面代码只写一套：通过组件包装层（`App*` 组件）由 `LocalUiStyle` 决定渲染哪套控件
+
 ---
 
 ## 技术栈
@@ -53,7 +61,8 @@
 | 类别 | 选型 |
 |---|---|
 | 语言 | Kotlin |
-| UI | Jetpack Compose + Material 3 |
+| UI | Jetpack Compose |
+| 界面风格 | Material 3 与 [Miuix](https://github.com/miuix-kotlin-multiplatform/miuix)（HyperOS）双风格，可在设置页切换 |
 | 异步 | Kotlin Coroutines |
 | 图片加载 | Coil 2.6 |
 | 传输 | Bluetooth Classic / RFCOMM（`BluetoothSocket` / `BluetoothServerSocket`） |
@@ -138,8 +147,8 @@
 
 ```
 app/src/main/java/com/ginkgoqwq/btgallery/
-├── MainActivity.kt                  # 入口 Activity
-├── AppRoot.kt                       # 顶层 Scaffold + 发送/接收模式切换
+├── MainActivity.kt                  # 入口 Activity（创建风格偏好 + 套用主题）
+├── AppRoot.kt                       # 顶层骨架 + 发送端/接收端/设置 三页切换
 ├── bluetooth/
 │   ├── BluetoothConfig.kt           # TAG / SERVICE_NAME / 服务 UUID
 │   ├── BluetoothConnector.kt        # 发送端：双向连接（读写协议帧）
@@ -156,9 +165,17 @@ app/src/main/java/com/ginkgoqwq/btgallery/
 └── ui/
     ├── SenderScreen.kt              # 发送端界面
     ├── ReceiverScreen.kt            # 接收端界面（含全屏轮播）
+    ├── SettingsScreen.kt            # 设置页（界面风格切换）
     ├── AppIconPreview.kt            # 应用图标预览（仅设计时）
-    ├── components/CommonUi.kt       # SectionCard / StatusPill / EmptyHint
-    └── theme/                       # 配色 / 主题 / 字体
+    ├── StylePreview.kt              # 双风格对照预览（仅设计时）
+    ├── components/
+    │   ├── AppComponents.kt         # 风格无关的组件包装层（App* 组件 + 语义配色）
+    │   └── CommonUi.kt              # SectionCard / StatusPill / EmptyHint
+    └── theme/
+        ├── UiStyle.kt               # 风格枚举 + 偏好持久化（CompositionLocal）
+        ├── AppTheme.kt              # 主题切换（Material 3 / Miuix）
+        ├── Color.kt / Theme.kt      # Material 3 配色与主题
+        └── Type.kt                  # 字体
 ```
 
 **测试**

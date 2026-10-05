@@ -35,14 +35,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -64,8 +56,17 @@ import com.ginkgoqwq.btgallery.bluetooth.BluetoothConnector
 import com.ginkgoqwq.btgallery.data.DeviceItem
 import com.ginkgoqwq.btgallery.transfer.RemoteFileInfo
 import com.ginkgoqwq.btgallery.transfer.SenderSession
+import com.ginkgoqwq.btgallery.ui.components.AppButton
+import com.ginkgoqwq.btgallery.ui.components.AppCard
+import com.ginkgoqwq.btgallery.ui.components.AppDivider
+import com.ginkgoqwq.btgallery.ui.components.AppProgress
+import com.ginkgoqwq.btgallery.ui.components.AppText
+import com.ginkgoqwq.btgallery.ui.components.AppTextButton
+import com.ginkgoqwq.btgallery.ui.components.AppTextStyle
 import com.ginkgoqwq.btgallery.ui.components.EmptyHint
 import com.ginkgoqwq.btgallery.ui.components.SectionCard
+import com.ginkgoqwq.btgallery.ui.components.appOnSurfaceVariant
+import com.ginkgoqwq.btgallery.ui.components.appPrimary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -256,16 +257,17 @@ fun SenderScreen() {
                 expanded = connectionExpanded,
                 onToggle = { connectionExpanded = !connectionExpanded },
                 trailing = {
-                    Text(
+                    AppText(
                         text = statusText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = AppTextStyle.Caption,
+                        color = appOnSurfaceVariant(),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
             ) {
-                Button(
+                AppButton(
+                    text = if (isScanning) "扫描中…" else "扫描附近设备",
                     onClick = {
                         if (!isScanning) {
                             devices = emptyList()
@@ -282,18 +284,11 @@ fun SenderScreen() {
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isScanning
-                ) {
-                    Text(if (isScanning) "扫描中…" else "扫描附近设备")
-                }
+                )
 
                 if (devices.isNotEmpty()) {
                     Spacer(Modifier.height(10.dp))
-                    Card(
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    ) {
+                    AppCard {
                         LazyColumn(Modifier.heightIn(max = 160.dp)) {
                             items(devices) { item ->
                                 val connected = connectedDevice?.address == item.address
@@ -331,28 +326,26 @@ fun SenderScreen() {
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column(Modifier.weight(1f)) {
-                                        Text(
-                                            item.name,
-                                            style = MaterialTheme.typography.bodyLarge,
+                                        AppText(
+                                            text = item.name,
+                                            style = AppTextStyle.Body,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
-                                        Text(
-                                            item.address,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        AppText(
+                                            text = item.address,
+                                            style = AppTextStyle.Caption,
+                                            color = appOnSurfaceVariant()
                                         )
                                     }
-                                    Text(
-                                        if (connected) "已连接" else "连接",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.primary
+                                    AppText(
+                                        text = if (connected) "已连接" else "连接",
+                                        style = AppTextStyle.ButtonLabel,
+                                        color = appPrimary()
                                     )
                                 }
                                 if (item != devices.last()) {
-                                    HorizontalDivider(
-                                        color = MaterialTheme.colorScheme.surfaceVariant
-                                    )
+                                    AppDivider()
                                 }
                             }
                         }
@@ -365,16 +358,17 @@ fun SenderScreen() {
         item(span = { GridItemSpan(maxLineSpan) }) {
             SectionCard("② 发送图片") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
+                    AppButton(
+                        text = "选择图片",
                         onClick = { pickImageLauncher.launch("image/*") },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("选择图片")
-                    }
-                    Button(
+                        modifier = Modifier.weight(1f),
+                        primary = false
+                    )
+                    AppButton(
+                        text = if (isSending) "发送中…" else "发送图片",
                         onClick = {
-                            val uri = selectedImageUri ?: return@Button
-                            if (!connector.isConnected) return@Button
+                            val uri = selectedImageUri ?: return@AppButton
+                            if (!connector.isConnected) return@AppButton
                             scope.launch(Dispatchers.IO) {
                                 isSending = true
                                 sendProgress = 0f
@@ -404,9 +398,7 @@ fun SenderScreen() {
                                 connector.isConnected &&
                                 !isSending &&
                                 !isRemoteBusy
-                    ) {
-                        Text(if (isSending) "发送中…" else "发送图片")
-                    }
+                    )
                 }
 
                 if (selectedImageUri != null) {
@@ -421,24 +413,21 @@ fun SenderScreen() {
                                 .clip(RoundedCornerShape(10.dp))
                         )
                         Spacer(Modifier.width(10.dp))
-                        Text(
-                            "已选择待发送图片",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        AppText(
+                            text = "已选择待发送图片",
+                            style = AppTextStyle.Caption,
+                            color = appOnSurfaceVariant()
                         )
                     }
                 }
 
                 if (isSending) {
                     Spacer(Modifier.height(10.dp))
-                    LinearProgressIndicator(
-                        progress = { sendProgress },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    AppProgress(fraction = sendProgress)
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        "发送进度：${(sendProgress * 100).toInt()}%",
-                        style = MaterialTheme.typography.bodySmall
+                    AppText(
+                        text = "发送进度：${(sendProgress * 100).toInt()}%",
+                        style = AppTextStyle.Caption
                     )
                 }
             }
@@ -447,26 +436,25 @@ fun SenderScreen() {
         // ---------- ③ 接收端图片 ----------
         item(span = { GridItemSpan(maxLineSpan) }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "③ 接收端图片",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
+                AppText(
+                    text = "③ 接收端图片",
+                    style = AppTextStyle.Subtitle,
+                    color = appPrimary()
                 )
                 Spacer(Modifier.width(10.dp))
-                Text(
-                    remoteStatus,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                AppText(
+                    text = remoteStatus,
+                    style = AppTextStyle.Caption,
+                    color = appOnSurfaceVariant(),
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Button(
+                AppButton(
+                    text = "刷新列表",
                     onClick = { refreshRemoteList() },
                     enabled = connector.isConnected && !isRemoteBusy
-                ) {
-                    Text("刷新列表")
-                }
+                )
             }
         }
 
@@ -501,12 +489,7 @@ private fun RemoteImageCard(
     deleteEnabled: Boolean,
     onDelete: () -> Unit
 ) {
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
+    AppCard {
         Column {
             Box(
                 modifier = Modifier
@@ -523,28 +506,30 @@ private fun RemoteImageCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Text(
+                    AppText(
                         text = if (failed) "无缩略图" else "加载中…",
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodySmall
+                        style = AppTextStyle.Caption,
+                        color = Color.White
                     )
                 }
             }
             Column(Modifier.padding(10.dp)) {
-                Text(
-                    file.name,
-                    style = MaterialTheme.typography.bodyMedium,
+                AppText(
+                    text = file.name,
+                    style = AppTextStyle.Body,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    formatSize(file.size),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                AppText(
+                    text = formatSize(file.size),
+                    style = AppTextStyle.Caption,
+                    color = appOnSurfaceVariant()
                 )
-                TextButton(onClick = onDelete, enabled = deleteEnabled) {
-                    Text("删除")
-                }
+                AppTextButton(
+                    text = "删除",
+                    onClick = onDelete,
+                    enabled = deleteEnabled
+                )
             }
         }
     }

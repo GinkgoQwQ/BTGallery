@@ -10,19 +10,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,18 +27,25 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.ginkgoqwq.btgallery.ui.ReceiverScreen
 import com.ginkgoqwq.btgallery.ui.SenderScreen
+import com.ginkgoqwq.btgallery.ui.SettingsScreen
+import com.ginkgoqwq.btgallery.ui.components.AppScaffold
+import com.ginkgoqwq.btgallery.ui.components.AppTabs
+import com.ginkgoqwq.btgallery.ui.components.AppText
+import com.ginkgoqwq.btgallery.ui.components.AppTextStyle
+import com.ginkgoqwq.btgallery.ui.components.AppTopBar
+import com.ginkgoqwq.btgallery.ui.theme.UiStyleStore
 
-/** 应用的两个工作模式。 */
-private enum class AppMode(val label: String) {
+/** 应用的三个页面。 */
+private enum class AppTab(val label: String) {
     Sender("发送端"),
-    Receiver("接收端")
+    Receiver("接收端"),
+    Settings("设置")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppRoot() {
+fun AppRoot(styleStore: UiStyleStore) {
     val context = LocalContext.current
-    var mode by remember { mutableStateOf(AppMode.Sender) }
+    var tab by remember { mutableStateOf(AppTab.Sender) }
     var permissionsGranted by remember { mutableStateOf(false) }
 
     val requiredPermissions = remember {
@@ -84,9 +81,9 @@ fun AppRoot() {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 CircularProgressIndicator()
-                Text(
-                    "正在请求蓝牙权限…\n请在弹出的对话框中选择「允许」",
-                    style = MaterialTheme.typography.bodyMedium,
+                AppText(
+                    text = "正在请求蓝牙权限…\n请在弹出的对话框中选择「允许」",
+                    style = AppTextStyle.Caption,
                     textAlign = TextAlign.Center
                 )
             }
@@ -94,16 +91,8 @@ fun AppRoot() {
         return
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("蓝牙图片传输") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
+    AppScaffold(
+        topBar = { AppTopBar("蓝牙图片传输") }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -113,26 +102,18 @@ fun AppRoot() {
         ) {
             Spacer(Modifier.height(12.dp))
 
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                AppMode.entries.forEachIndexed { index, item ->
-                    SegmentedButton(
-                        selected = mode == item,
-                        onClick = { mode = item },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = AppMode.entries.size
-                        )
-                    ) {
-                        Text(item.label)
-                    }
-                }
-            }
+            AppTabs(
+                tabs = AppTab.entries.map { it.label },
+                selectedIndex = AppTab.entries.indexOf(tab),
+                onSelect = { tab = AppTab.entries[it] }
+            )
 
             Spacer(Modifier.height(12.dp))
 
-            when (mode) {
-                AppMode.Sender -> SenderScreen()
-                AppMode.Receiver -> ReceiverScreen()
+            when (tab) {
+                AppTab.Sender -> SenderScreen()
+                AppTab.Receiver -> ReceiverScreen()
+                AppTab.Settings -> SettingsScreen(styleStore)
             }
         }
     }
