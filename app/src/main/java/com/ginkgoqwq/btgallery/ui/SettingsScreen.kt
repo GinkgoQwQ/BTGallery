@@ -8,32 +8,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ginkgoqwq.btgallery.ui.components.AppTabs
+import com.ginkgoqwq.btgallery.data.AppPreferences
+import com.ginkgoqwq.btgallery.ui.components.AppSwitchRow
 import com.ginkgoqwq.btgallery.ui.components.AppText
 import com.ginkgoqwq.btgallery.ui.components.AppTextStyle
 import com.ginkgoqwq.btgallery.ui.components.SectionCard
 import com.ginkgoqwq.btgallery.ui.components.appOnSurfaceVariant
-import com.ginkgoqwq.btgallery.ui.theme.UiStyle
-import com.ginkgoqwq.btgallery.ui.theme.UiStyleStore
 
-/** 设置页：目前提供界面风格切换。 */
+/** 设置页：外观开关 + 关于信息。 */
 @Composable
-fun SettingsScreen(styleStore: UiStyleStore) {
+fun SettingsScreen(prefs: AppPreferences) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        SectionCard("界面风格") {
-            AppTabs(
-                tabs = UiStyle.entries.map { it.label },
-                selectedIndex = UiStyle.entries.indexOf(styleStore.style),
-                onSelect = { styleStore.set(UiStyle.entries[it]) }
+        SectionCard("外观") {
+            AppSwitchRow(
+                title = "动态取色",
+                summary = "跟随系统壁纸取色（Android 12+）",
+                checked = prefs.monetEnabled,
+                onCheckedChange = { prefs.monetEnabled = it }
             )
-            Spacer(Modifier.height(10.dp))
-            AppText(
-                text = styleStore.style.description,
-                style = AppTextStyle.Caption,
-                color = appOnSurfaceVariant()
+            Spacer(Modifier.height(4.dp))
+            AppSwitchRow(
+                title = "悬浮底栏",
+                summary = "开启后底栏悬浮于内容之上；关闭则为贴底导航栏",
+                checked = prefs.floatingNavBarEnabled,
+                onCheckedChange = { prefs.floatingNavBarEnabled = it }
             )
         }
 

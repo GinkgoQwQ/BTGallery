@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.ginkgoqwq.btgallery.bluetooth.BluetoothConfig
 import com.ginkgoqwq.btgallery.bluetooth.BluetoothConnector
+import com.ginkgoqwq.btgallery.data.AppStats
 import com.ginkgoqwq.btgallery.data.DeviceItem
 import com.ginkgoqwq.btgallery.transfer.RemoteFileInfo
 import com.ginkgoqwq.btgallery.transfer.SenderSession
@@ -72,7 +74,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun SenderScreen() {
+fun SenderScreen(stats: AppStats) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -93,6 +95,9 @@ fun SenderScreen() {
     var sendProgress by remember { mutableStateOf(0f) }
     var isSending by remember { mutableStateOf(false) }
     var statusText by remember { mutableStateOf("未连接") }
+
+    // 同步到全局状态，主页可以实时看到发送端在干什么
+    SideEffect { stats.senderStatus = statusText }
 
     // 连接模块是否展开（连接成功后自动折叠）
     var connectionExpanded by remember { mutableStateOf(true) }
@@ -380,6 +385,7 @@ fun SenderScreen() {
                                     val list = session.getFileList()
                                     withContext(Dispatchers.Main) {
                                         statusText = "发送完成"
+                                        stats.onFileSent()
                                         remoteFiles = list
                                         remoteStatus = "共 ${list.size} 张图片"
                                     }

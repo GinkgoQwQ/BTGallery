@@ -29,7 +29,9 @@ class ReceiverSession(
     private val outputStream: OutputStream,
     private val repository: MediaRepository,
     private val onFilesChanged: () -> Unit = {},
-    private val onProgress: (received: Long, total: Long) -> Unit = { _, _ -> }
+    private val onProgress: (received: Long, total: Long) -> Unit = { _, _ -> },
+    /** 仅在一个文件**完整落盘成功后**回调（与 onFilesChanged 不同，后者删除也会触发）。 */
+    private val onFileReceived: () -> Unit = {}
 ) {
 
     /** 当前正在接收的文件状态；同一时刻只允许一个。 */
@@ -203,6 +205,7 @@ class ReceiverSession(
             return
         }
 
+        onFileReceived()
         onFilesChanged()
         writeFileStatus(FileStatus(inc.meta.id, true, inc.received, ""))
     }

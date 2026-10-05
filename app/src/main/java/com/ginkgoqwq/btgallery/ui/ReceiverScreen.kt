@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +53,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import coil.compose.AsyncImage
 import com.ginkgoqwq.btgallery.bluetooth.BluetoothServerManager
+import com.ginkgoqwq.btgallery.data.AppStats
 import com.ginkgoqwq.btgallery.data.ImageItem
 import com.ginkgoqwq.btgallery.data.MediaRepository
 import com.ginkgoqwq.btgallery.transfer.ReceiverSession
@@ -87,7 +89,7 @@ private enum class IntervalUnit(
 }
 
 @Composable
-fun ReceiverScreen() {
+fun ReceiverScreen(stats: AppStats) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -99,6 +101,9 @@ fun ReceiverScreen() {
 
     var isListening by remember { mutableStateOf(false) }
     var statusText by remember { mutableStateOf("未监听") }
+
+    // 同步到全局状态，主页可以实时看到接收端在干什么
+    SideEffect { stats.receiverStatus = statusText }
     var images by remember { mutableStateOf<List<ImageItem>>(emptyList()) }
     var currentIndex by remember { mutableIntStateOf(0) }
     var isPlaying by remember { mutableStateOf(true) }
@@ -148,6 +153,9 @@ fun ReceiverScreen() {
                                 refreshImages()
                                 statusText = "图片库已更新"
                             }
+                        },
+                        onFileReceived = {
+                            scope.launch(Dispatchers.Main) { stats.onFileReceived() }
                         }
                     ).run()
                 },

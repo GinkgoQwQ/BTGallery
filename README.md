@@ -1,8 +1,9 @@
 # 蓝牙相册（BluetoothGallery）
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![Miuix](https://img.shields.io/badge/UI-Miuix%20(HyperOS)-FF6900)](https://github.com/miuix-kotlin-multiplatform/miuix)
 [![minSdk](https://img.shields.io/badge/minSdk-26-brightgreen)](https://developer.android.com/about/versions/oreo)
 
 一个**完全基于蓝牙**的 Android 图片传输与展示系统。
@@ -48,11 +49,44 @@
 
 ### 界面
 
-- 内置**两套界面风格**，设置页一键切换，选择会持久化保存：
-  - **默认**：Material 3 配色，蓝白清爽
-  - **Miuix**：HyperOS / MIUI 观感，圆润卡片与胶囊控件
-- 深色模式跟随系统
+- **悬浮底栏**（Apple Dock 风格）：药丸形、浮于内容之上、选中项高亮胶囊，无模糊/玻璃效果
+- 四个页面：**主页 / 发送端 / 接收端 / 设置**
+  - 主页：顶部**蓝牙状态大卡片**（参考 KernelSU `StatusCard`：大圆角卡 + 右下角溢出的大号半透明图标 + 大标题/副标题 + 状态标签）、
+    收发两端实时状态、累计已发送 / 已接收文件数、本地图片库数量
+- **底栏形态可切换**（默认关闭 = 贴底导航栏，开启 = 悬浮胶囊底栏）
+  - 参考 KernelSU / HyperMusicCover 的实现：`Scaffold(bottomBar = { Box { Bar(align(BottomCenter)) } })`
+  - 悬浮形态**移植自 KernelSU** 的 `FloatingBottomBar`：指示器可**按住横向拖拽**、松手吸附；
+    指示器内叠了一份强调色内容副本并裁剪，因此图标/文字颜色随胶囊平滑过渡；无模糊 / 玻璃效果
+  - 滑块**可按住横向拖拽**，松手吸附到最近一项；拖动时该项放大、图标/文字颜色随胶囊平滑过渡
+  - 配色直接取 `MiuixTheme.colorScheme`（与 KernelSU 相同）
+  - 主页大卡片同样参考 KernelSU 布局（**仅参考布局，未复制代码**）
+    > 底栏实现移植自 [KernelSU](https://github.com/tiann/KernelSU)（GPL-3.0），
+  > 相关文件：`ui/components/nav/DampedDragAnimation.kt`、`ui/components/nav/FloatingBottomBar.kt`
+  - 指示器位置由 DampedDragAnimation 的连续值驱动，**拖动时跟手**，不是点击才跳一下
+  - 项宽由总宽除以项数得出，所以项数变化也不会溢出
+  - 底部间距与 KernelSU 同算法：`if (导航栏 inset != 0) 8dp + inset else 28dp`，
+    因此有导航栏时刚好悬在导航栏上方，手势导航时也不会贴底
+  - 贴底形态：使用 Miuix `NavigationBar`
+- 页面切换：**`HorizontalPager` + 弹簧动画**（整页满宽平移，无淡入淡出、无左右白框）
+  - 弹簧参数与参考应用一致：`stiffness = 322.2`、`dampingRatio = 32.31 / (2·√322.2)`、`visibilityThreshold = 0.5`
+  - 水平内边距放在**页面内部**而非 pager 上，所以滑动时不会露出固定白框
+  - **预组合全部页面**（`beyondViewportPageCount = 页面数`），否则首次切页要在动画中途
+    现场组合目标页（内含蓝牙初始化、注册广播等），会直接掉帧
+  - 页面内的文件 I/O（图片目录扫描）放到 `Dispatchers.IO`，不阻塞主线程
+  - 带 `selectedIndex` / `isNavigating` / `navJob` 守卫，避免动画与手势互相打架
+  - 支持手势左右滑动，滑完自动同步选中项；返回键回到第一页
+- **记忆上次页面**：退出时所在的页会被记录，下次启动直接回到那一页
+- 设置页有两个开关，均持久化保存（SharedPreferences）：
+  - **「动态取色」**（默认开启）：跟随系统壁纸取色（Android 12+ / Monet）
+    - 由 `MiuixTheme(controller = ThemeController(ColorSchemeMode.MonetSystem))` 实现
+    - 低于 Android 12 时自动回退到 Miuix 内置配色
+  - **「悬浮底栏」**（默认关闭）：贴底导航栏 ↔ 悬浮胶囊底栏
+- 深色模式跟随系统，**系统栏图标明暗跟随 App 实际主题**
+  - targetSdk 35+ 下 edge-to-edge 强制生效（系统栏透明），图标颜色不会自动跟随，
+    因此在 `AppTheme` 里显式设置 `isAppearanceLightStatusBars` / `isAppearanceLightNavigationBars`，
+    避免「浅色 App + 白色图标」互相看不见
 - 界面代码只写一套：通过组件包装层（`App*` 组件）由 `LocalUiStyle` 决定渲染哪套控件
+- 切换风格时用 `movableContentOf` 保留内容状态，**不会打断正在进行的蓝牙连接 / 监听**
 
 ---
 
@@ -62,7 +96,9 @@
 |---|---|
 | 语言 | Kotlin |
 | UI | Jetpack Compose |
-| 界面风格 | Material 3 与 [Miuix](https://github.com/miuix-kotlin-multiplatform/miuix)（HyperOS）双风格，可在设置页切换 |
+| 界面风格 | [Miuix](https://github.com/miuix-kotlin-multiplatform/miuix)（HyperOS / MIUI 设计语言） |
+| 动态取色 | 两套风格均支持 Monet 系统取色，设置页开关控制 |
+| 导航 | `HorizontalPager` + 弹簧动画；悬浮 / 贴底底栏可切换 |
 | 异步 | Kotlin Coroutines |
 | 图片加载 | Coil 2.6 |
 | 传输 | Bluetooth Classic / RFCOMM（`BluetoothSocket` / `BluetoothServerSocket`） |
@@ -148,7 +184,7 @@
 ```
 app/src/main/java/com/ginkgoqwq/btgallery/
 ├── MainActivity.kt                  # 入口 Activity（创建风格偏好 + 套用主题）
-├── AppRoot.kt                       # 顶层骨架 + 发送端/接收端/设置 三页切换
+├── AppRoot.kt                       # 顶层骨架 + 底部导航（发送端/接收端/设置）
 ├── bluetooth/
 │   ├── BluetoothConfig.kt           # TAG / SERVICE_NAME / 服务 UUID
 │   ├── BluetoothConnector.kt        # 发送端：双向连接（读写协议帧）
@@ -161,21 +197,24 @@ app/src/main/java/com/ginkgoqwq/btgallery/
 │   └── FileTransfer.kt              # 早期协议实现（已废弃，保留参考）
 ├── data/
 │   ├── Models.kt                    # DeviceItem / ImageItem
+│   ├── AppStats.kt                  # 全局运行状态 + 收发计数（持久化）
+│   ├── AppPreferences.kt            # 偏好：Monet / 悬浮底栏 / 上次页面
 │   └── MediaRepository.kt           # 图片扫描 / 删除 / 缩略图生成
 └── ui/
+    ├── HomeScreen.kt                # 主页（蓝牙大卡片 + 状态 + 统计）
     ├── SenderScreen.kt              # 发送端界面
     ├── ReceiverScreen.kt            # 接收端界面（含全屏轮播）
-    ├── SettingsScreen.kt            # 设置页（界面风格切换）
+    ├── SettingsScreen.kt            # 设置页（取色 / 底栏开关）
     ├── AppIconPreview.kt            # 应用图标预览（仅设计时）
-    ├── StylePreview.kt              # 双风格对照预览（仅设计时）
     ├── components/
-    │   ├── AppComponents.kt         # 风格无关的组件包装层（App* 组件 + 语义配色）
-    │   └── CommonUi.kt              # SectionCard / StatusPill / EmptyHint
+    │   ├── AppComponents.kt         # 组件层（App* 组件 + 语义配色，只依赖 Miuix）
+    │   ├── AppIcons.kt              # 自绘矢量图标（主页/发送/接收/设置/蓝牙）
+    │   ├── CommonUi.kt              # SectionCard / StatusPill / EmptyHint
+    │   └── nav/                     # 悬浮底栏（移植自 KernelSU）
+    │       ├── DampedDragAnimation.kt
+    │       └── FloatingBottomBar.kt
     └── theme/
-        ├── UiStyle.kt               # 风格枚举 + 偏好持久化（CompositionLocal）
-        ├── AppTheme.kt              # 主题切换（Material 3 / Miuix）
-        ├── Color.kt / Theme.kt      # Material 3 配色与主题
-        └── Type.kt                  # 字体
+        └── AppTheme.kt              # Miuix 主题 + Monet 取色 + 系统栏图标明暗
 ```
 
 **测试**
@@ -274,11 +313,36 @@ Windows 下把 `./gradlew` 换成 `gradlew.bat`。
 
 ## 许可证
 
-本项目采用 [MIT License](LICENSE) 开源。
+本项目采用 **GNU General Public License v3.0**（`GPL-3.0-only`）开源，
+完整条款见根目录 [LICENSE](LICENSE)。
 
 ```
-Copyright (c) 2026 GinkgoQwQ
+Copyright (C) 2026 GinkgoQwQ
 ```
 
-你可以自由使用、修改、分发本软件，包括商业用途，
-只需保留原始的版权声明与许可声明。软件按「原样」提供，不附带任何担保。
+简要说明（以 LICENSE 原文为准）：
+
+- 你可以自由使用、修改、再分发本软件，包括商业用途
+- **但**：分发时必须提供完整源代码，且**衍生作品也必须以 GPL-3.0 授权**（copyleft / 传染性）
+- 软件按「原样」提供，不附带任何担保
+
+### 第三方代码与致谢
+
+本项目部分界面实现**移植自 [KernelSU](https://github.com/tiann/KernelSU)**（GPL-3.0）：
+
+| 本项目文件 | 源自 KernelSU |
+|---|---|
+| `ui/components/nav/DampedDragAnimation.kt` | `...ui.component.miuix.animation.DampedDragAnimation` |
+| `ui/components/nav/FloatingBottomBar.kt` | `...ui.component.FloatingBottomBar` |
+
+感谢 KernelSU 作者 weishu 及其贡献者开源了这些实现。
+
+同时使用以下第三方库：
+
+| 库 | 许可 |
+|---|---|
+| [Miuix](https://github.com/miuix-kotlin-multiplatform/miuix) | Apache-2.0 |
+| [Coil](https://github.com/coil-kt/coil) | Apache-2.0 |
+| AndroidX / Jetpack Compose | Apache-2.0 |
+
+> Apache-2.0 与 GPL-3.0 单向兼容，可安全用于本项目。
