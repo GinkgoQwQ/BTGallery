@@ -1,5 +1,10 @@
 # 蓝牙图片传输（BluetoothConnect）
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![minSdk](https://img.shields.io/badge/minSdk-26-brightgreen)](https://developer.android.com/about/versions/oreo)
+
 一个**完全基于蓝牙**的 Android 图片传输与展示系统。
 
 发送端通过蓝牙把手机本地图片发到接收端；接收端自动保存、加入图片库并轮播播放。
@@ -254,4 +259,11 @@ Windows 下把 `./gradlew` 换成 `gradlew.bat`。
 
 ## 许可证
 
-尚未确定。如需开源，建议补充 `LICENSE` 文件（如 [MIT](https://choosealicense.com/licenses/mit/)）。
+本项目采用 [MIT License](LICENSE) 开源。
+
+```
+Copyright (c) 2026 GinkgoQwQ
+```
+
+你可以自由使用、修改、分发本软件，包括商业用途，
+只需保留原始的版权声明与许可声明。软件按「原样」提供，不附带任何担保。
