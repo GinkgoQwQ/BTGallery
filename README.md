@@ -1,4 +1,4 @@
-# 蓝牙图片传输（BluetoothConnect）
+# BTGallery · 蓝牙图片传输
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
@@ -78,7 +78,7 @@
 ## 通信协议
 
 收发双方使用一套**自定义二进制协议**，定义在
-[`transfer/Protocol.kt`](app/src/main/java/com/example/bluetoothimagetransfer/transfer/Protocol.kt)。
+[`transfer/Protocol.kt`](app/src/main/java/com/ginkgoqwq/btgallery/transfer/Protocol.kt)。
 
 ### 帧格式
 
@@ -139,7 +139,7 @@
 ## 项目结构
 
 ```
-app/src/main/java/com/example/bluetoothimagetransfer/
+app/src/main/java/com/ginkgoqwq/btgallery/
 ├── MainActivity.kt                  # 入口 Activity
 ├── AppRoot.kt                       # 顶层 Scaffold + 发送/接收模式切换
 ├── bluetooth/
