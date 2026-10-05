@@ -1,4 +1,4 @@
-# 蓝牙图片传输（BluetoothConnect）
+# 蓝牙相册（BluetoothGallery）
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
@@ -8,9 +8,7 @@
 一个**完全基于蓝牙**的 Android 图片传输与展示系统。
 
 发送端通过蓝牙把手机本地图片发到接收端；接收端自动保存、加入图片库并轮播播放。
-整个方案**不依赖 Wi-Fi、局域网或任何 IP 网络**——只要蓝牙可用就能工作。
-
-> 典型场景：把一台 Wi-Fi 已损坏的旧手机变成「蓝牙电子相框」。
+整个方案**不依赖 Wi-Fi、局域网或任何 IP 网络**，适用于无网络环境以及wifi损坏的设备
 
 ---
 
